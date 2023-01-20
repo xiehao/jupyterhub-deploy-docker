@@ -3,6 +3,7 @@
 
 # Configuration file for JupyterHub
 import os
+import docker
 
 c = get_config()
 
@@ -15,6 +16,17 @@ c.JupyterHub.spawner_class = "dockerspawner.DockerSpawner"
 
 # Spawn containers from this image
 c.DockerSpawner.image = os.environ["DOCKER_NOTEBOOK_IMAGE"]
+
+# Pass an argument `--gpus all` to the `docker` command, in order to use GPU on
+# the host, the `docker` package needs to be imported first.
+c.DockerSpawner.extra_host_config = {
+    "device_requests": [
+        docker.types.DeviceRequest(
+            count=-1,
+            capabilities=[["gpu"]],
+        ),
+    ],
+}
 
 # JupyterHub requires a single-user instance of the Notebook server, so we
 # default to using the `start-singleuser.sh` script included in the
